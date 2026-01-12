@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Premium Study Library • Management</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #fbbf24;           /* Main yellow */
+      --primary-dark: #f59e0b;      /* Darker yellow */
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #fffbeb;
+      --card: rgba(255,255,255,0.98);
+      --text: #451a03;
+      --text-light: #78350f;
+      --border: #fde68a;
+      --shadow-sm: 0 6px 20px rgba(251,191,36,0.15);
+      --shadow-lg: 0 12px 48px rgba(251,191,36,0.25);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem;
+      line-height: 1.55;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(2.6rem, 7vw, 4.2rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(90deg, #fff, #fefce8, #fde68a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.6rem;
+    }
+
+    .creator-statement {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      margin-top: 0.6rem;
+    }
+
+    .main-content { padding: 2.5rem; }
+
+    .section-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .date-display {
+      text-align: center;
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 1.15rem;
+      margin-bottom: 2.2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.6rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    label {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.98rem;
+    }
+
+    input, select {
+      padding: 1rem 1.3rem;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 1.02rem;
+      background: white;
+      transition: all 0.25s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(251,191,36,0.25);
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger  { background: var(--danger);  color: white; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(251,191,36,0.3);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1.3rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 2.5rem 0;
+    }
+
+    .membership-badge {
+      padding: 1.2rem;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .active   { background: #d1fae5; color: #065f46; }
+    .expired  { background: #fee2e2; color: #991b1b; }
+
+    /* Admin Section */
+    .admin-section { margin-top: 3rem; padding-top: 2rem; border-top: 2px dashed var(--border); }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 0.8rem;
+      font-size: 0.97rem;
+    }
+
+    th {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 1rem 1.2rem;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      background: white;
+      padding: 1rem 1.2rem;
+      border-radius: 10px;
+    }
+
+    .still-inside { color: var(--success); font-weight: 700; }
+
+    .pin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+
+    .pin-dialog {
+      background: white;
+      padding: 2.8rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 440px;
+      text-align: center;
+      box-shadow: 0 25px 70px rgba(251,191,36,0.35);
+    }
+
+    .pin-input {
+      font-size: 2.8rem;
+      letter-spacing: 1.4rem;
+      text-align: center;
+      padding: 1.2rem;
+      width: 100%;
+      max-width: 300px;
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      margin: 1.8rem 0;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding: 2rem;
+      color: var(--text-light);
+      font-size: 0.95rem;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .main-content { padding: 1.8rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .button-group { flex-direction: column; }
+      h1 { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <header>
+      <h1>PREMIUM STUDY LIBRARY</h1>
+      <div class="creator-statement">Crafted with Passion by Shreyas S</div>
+    </header>
+
+    <div class="main-content">
+      <h2 class="section-title">Member Entry / Exit Portal</h2>
+      <div class="date-display" id="todayDate"></div>
+
+      <div id="membershipStatus" class="membership-badge" style="display:none;"></div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Admission No. *</label>
+          <input type="text" id="admission" placeholder="364" autofocus />
+        </div>
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="name" placeholder="Shreyas S" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="phone" placeholder="98xxxxxxxx" />
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <select id="duration">
+            <option value="3">3 Hours</option>
+            <option value="6">6 Hours</option>
+            <option value="9">9 Hours</option>
+            <option value="12">12 Hours</option>
+            <option value="full">Full Day (24h)</option>
+            <option value="custom">Custom Slot</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Seat Number</label>
+          <input type="text" id="seat" placeholder="A-12, B-08..." />
+        </div>
+        <div class="form-group">
+          <label>Locker Number</label>
+          <input type="text" id="locker" placeholder="L-05" />
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-success" onclick="recordEntry()">
+          <i class="fas fa-sign-in-alt"></i> Record Entry
+        </button>
+        <button class="btn btn-danger" onclick="recordExit()">
+          <i class="fas fa-sign-out-alt"></i> Record Exit
+        </button>
+        <button class="btn btn-primary" onclick="showAdminPin()">
+          <i class="fas fa-user-shield"></i> Admin Panel
+        </button>
+      </div>
+
+      <!-- Admin Section (hidden by default) -->
+      <div class="admin-section" id="adminSection" style="display:none;">
+        <h2 class="section-title">Today's Attendance Records</h2>
+        <div class="button-group" style="margin:1.5rem 0;">
+          <button class="btn btn-primary" onclick="generatePDF()">
+            <i class="fas fa-file-pdf"></i> Print / Save PDF Report
+          </button>
+          <button class="btn btn-danger" onclick="hideAdmin()">
+            <i class="fas fa-times"></i> Close Admin View
+          </button>
+        </div>
+
+        <table id="attendanceTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Adm. No.</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Duration</th>
+              <th>Seat</th>
+              <th>Locker</th>
+              <th>Entry Time</th>
+              <th>Exit Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      Premium Study Library Management System • Powered by Shreyas S • 2026
+    </footer>
+  </div>
+</div>
+
+<!-- PIN Modal -->
+<div class="pin-modal" id="pinModal">
+  <div class="pin-dialog">
+    <h2>Admin Access Required</h2>
+    <p style="color:var(--text-light); margin:1.2rem 0 1.8rem;">Enter PIN to continue</p>
+    <input type="password" class="pin-input" id="pinInput" maxlength="6" placeholder="••••••" />
+    <div style="margin-top:2rem;">
+      <button class="btn btn-primary" onclick="checkAdminPin()">Unlock</button>
+      <button class="btn btn-outline" onclick="hideAdminPin()" style="margin-left:1.2rem;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PIN = "1512";
+  let db;
+
+  const dbRequest = indexedDB.open("PremiumLibraryDB", 7);
+
+  dbRequest.onupgradeneeded = e => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains("records")) {
+      db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
+    }
+  };
+
+  dbRequest.onsuccess = e => {
+    db = e.target.result;
+    updateDate();
+  };
+
+  function updateDate() {
+    const now = new Date();
+    document.getElementById("todayDate").textContent =
+      now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) +
+      " • " + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  // ========================
+  //    PIN & Admin Controls
+  // ========================
+  function showAdminPin() {
+    document.getElementById("pinModal").style.display = "flex";
+    document.getElementById("pinInput").focus();
+  }
+
+  function hideAdminPin() {
+    document.getElementById("pinModal").style.display = "none";
+    document.getElementById("pinInput").value = "";
+  }
+
+  function checkAdminPin() {
+    const pin = document.getElementById("pinInput").value;
+    if (pin === ADMIN_PIN) {
+      hideAdminPin();
+      document.getElementById("adminSection").style.display = "block";
+      loadTodayRecords();
+    } else {
+      alert("❌ Wrong PIN!");
+      document.getElementById("pinInput").value = "";
+    }
+  }
+
+  function hideAdmin() {
+    document.getElementById("adminSection").style.display = "none";
+  }
+
+  function loadTodayRecords() {
+    const tbody = document.querySelector("#attendanceTable tbody");
+    tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;padding:3rem;'>Loading today's records...</td></tr>";
+
+    const tx = db.transaction("records", "readonly");
+    const req = tx.objectStore("records").getAll();
+
+    req.onsuccess = () => {
+      const today = new Date().toISOString().slice(0,10);
+      const todayRecords = req.result
+        .filter(r => r.entryTime.startsWith(today))
+        .sort((a,b) => new Date(b.entryTime) - new Date(a.entryTime));
+
+      tbody.innerHTML = todayRecords.length === 0
+        ? "<tr><td colspan='9' style='text-align:center;color:#78350f;padding:4rem;font-size:1.2rem;'>No entries today</td></tr>"
+        : "";
+
+      todayRecords.forEach((r, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${i+1}</td>
+          <td><strong>${r.admission}</strong></td>
+          <td>${r.name}</td>
+          <td>${r.phone || "-"}</td>
+          <td>${r.duration}</td>
+          <td>${r.seat || "-"}</td>
+          <td>${r.locker || "-"}</td>
+          <td>${new Date(r.entryTime).toLocaleString('en-IN', {hour12:true})}</td>
+          <td class="${!r.exitTime ? 'still-inside' : ''}">
+            ${r.exitTime ? new Date(r.exitTime).toLocaleString('en-IN', {hour12:true}) : "Still Inside"}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    };
+  }
+
+  // ========================
+  //     PDF Generation
+  // ========================
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    doc.setFontSize(22);
+    doc.setTextColor(251, 191, 36);
+    doc.text("PREMIUM STUDY LIBRARY", 105, 20, { align: "center" });
+
+    doc.setFontSize(16);
+    doc.setTextColor(120, 53, 15);
+    doc.text("Attendance Report - " + dateStr, 105, 32, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.text("Crafted by Shreyas S", 105, 40, { align: "center" });
+
+    const table = document.getElementById("attendanceTable");
+    const canvas = await html2canvas(table, { scale: 2.5 });
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = 190;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    doc.addImage(imgData, 'PNG', 10, 50, imgWidth, imgHeight);
+
+    doc.setFontSize(10);
+    doc.setTextColor(120, 53, 15);
+    doc.text("Generated on: " + today.toLocaleString('en-IN'), 10, 280);
+
+    doc.save(`Premium_Library_Attendance_${today.toISOString().slice(0,10)}.pdf`);
+    alert("PDF Report Generated Successfully!");
+  }
+
+  // ===============================================
+  //     Record Entry & Exit (basic implementation)
+  // ===============================================
+  function recordEntry() {
+    const admission = document.getElementById("admission").value.trim();
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const duration = document.getElementById("duration").value;
+    const seat = document.getElementById("seat").value.trim();
+    const locker = document.getElementById("locker").value.trim();
+
+    if (!admission || !name) {
+      alert("Admission No. and Name are required!");
+      return;
+    }
+
+    const record = {
+      admission,
+      name,
+      phone: phone || null,
+      duration,
+      seat: seat || null,
+      locker: locker || null,
+      entryTime: new Date().toISOString(),
+      exitTime: null
+    };
+
+    const tx = db.transaction("records", "readwrite");
+    tx.objectStore("records").add(record);
+    tx.oncomplete = () => {
+      alert("Entry Recorded Successfully!");
+      clearForm();
+    };
+  }
+
+  function recordExit() {
+    const admission = document.getElementById("admission").value.trim();
+    if (!admission) {
+      alert("Enter Admission No. to record exit");
+      return;
+    }
+
+    const tx = db.transaction("records", "readwrite");
+    const store = tx.objectStore("records");
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const today = new Date().toISOString().slice(0,10);
+      const record = req.result.find(r =>
+        r.admission === admission &&
+        r.entryTime.startsWith(today) &&
+        !r.exitTime
+      );
+
+      if (!record) {
+        alert("No active entry found for this admission today");
+        return;
+      }
+
+      record.exitTime = new Date().toISOString();
+      store.put(record);
+
+      tx.oncomplete = () => {
+        alert("Exit Recorded Successfully!");
+        clearForm();
+      };
+    };
+  }
+
+  function clearForm() {
+    document.getElementById("admission").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("seat").value = "";
+    document.getElementById("locker").value = "";
+    document.getElementById("duration").value = "3";
+  }
+</script>
+</body>
+</html>
